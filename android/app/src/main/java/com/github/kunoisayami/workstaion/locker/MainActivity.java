@@ -60,6 +60,7 @@ public class MainActivity extends AppCompatActivity {
 			Log.d(TAG, "Found connected device: " + device.getAddress() + " " + device.getName());
 		}
 	}
+	// https://www.tutorialspoint.com/how-to-check-if-a-bluetooth-device-is-connected-with-android-device
 	private final BroadcastReceiver broadcastReceiver = new BroadcastReceiver() {
 		BluetoothDevice device;
 		@Override
