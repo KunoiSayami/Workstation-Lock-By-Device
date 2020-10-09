@@ -23,50 +23,30 @@ import android.bluetooth.BluetoothDevice;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
-import android.content.IntentFilter;
-import android.os.Bundle;
+import android.os.AsyncTask;
 import android.util.Log;
-import android.widget.Button;
-import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
-import androidx.appcompat.app.AppCompatActivity;
-
 
 import static com.github.kunoisayami.workstaion.locker.Unit.getBluetoothNameAndAddress;
 
-public class MainActivity extends AppCompatActivity {
-	private static final String TAG = "log_MainActivity";
-
-	TextView textDeviceName, textDeviceAddress;
-	Button buttonConfirm, buttonReset;
-
-	private void initView() {
-
-	}
+class DeviceDisconnectReceiver extends BroadcastReceiver {
+	private static final String TAG = "log_DisconnectReceiver";
+	BluetoothDevice device;
 
 	@Override
-	protected void onCreate(Bundle savedInstanceState) {
-		super.onCreate(savedInstanceState);
-		setContentView(R.layout.activity_main);
-		IntentFilter filter = new IntentFilter();
-		filter.addAction(BluetoothDevice.ACTION_ACL_CONNECTED);
-		filter.addAction(BluetoothDevice.ACTION_ACL_DISCONNECT_REQUESTED);
-		filter.addAction(BluetoothDevice.ACTION_ACL_DISCONNECTED);
-		this.registerReceiver(broadcastReceiver, filter);
-	}
-
-	// https://www.tutorialspoint.com/how-to-check-if-a-bluetooth-device-is-connected-with-android-device
-	private final BroadcastReceiver broadcastReceiver = new BroadcastReceiver() {
-		@Override
-		public void onReceive(Context context, @NonNull Intent intent) {
+	public void onReceive(Context context, @NonNull Intent intent) {
+		String action = intent.getAction();
+		device = intent.getParcelableExtra(BluetoothDevice.EXTRA_DEVICE);
+		if (device == null) {
+			Log.w(TAG, "onReceive: Got null device");
+			return ;
 		}
-	};
+		if (BluetoothDevice.ACTION_ACL_DISCONNECTED.equals(action)) {
+			Log.i(TAG, "Device "+ getBluetoothNameAndAddress(device) +" is now disconnected");
+		}
 
-	@Override
-	protected void onDestroy() {
-		this.unregisterReceiver(broadcastReceiver);
-		super.onDestroy();
 	}
+
 }
