@@ -1,0 +1,3 @@
+[http]
+key = test
+port = 8080
