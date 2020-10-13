@@ -1,4 +1,4 @@
-package com.github.kunoisayami.workstaion.locker;
+package com.github.kunoisayami.workstation.locker;
 
 import org.junit.Test;
 

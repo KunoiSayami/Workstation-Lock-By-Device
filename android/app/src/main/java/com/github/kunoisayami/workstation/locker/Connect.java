@@ -17,7 +17,7 @@
  ** You should have received a copy of the GNU Affero General Public License
  ** along with this program. If not, see <https://www.gnu.org/licenses/>.
  */
-package com.github.kunoisayami.workstaion.locker;
+package com.github.kunoisayami.workstation.locker;
 
 import android.os.AsyncTask;
 import android.util.Log;
@@ -34,7 +34,6 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
-import java.util.Iterator;
 
 import javax.net.ssl.HttpsURLConnection;
 
@@ -66,19 +65,17 @@ public class Connect extends AsyncTask<URL, Integer, Long> {
 
 	private Callback listener;
 
-	private HashMap<String, String> headerParams, postParams;
+	private HashMap<String, String> postParams;
 
 
-	Connect(HashMap<String, String> _headerParams,
-			HashMap<String, String> _postParams,
-			String _requestPath,
-			Callback _listener,
+	Connect(HashMap<String, String> postParams,
+			String requestPath,
+			Callback listener,
 			boolean is_post) {
-		headerParams = _headerParams;
-		postParams = _postParams;
-		requestPath = _requestPath;
-		listener = _listener;
-		method = is_post? "POST" : "GET";
+		this.postParams = postParams;
+		this.requestPath = requestPath;
+		this.listener = listener;
+		this.method = is_post? "POST" : "GET";
 	}
 
 
@@ -95,15 +92,6 @@ public class Connect extends AsyncTask<URL, Integer, Long> {
 			client.setRequestProperty("Accept-Charset", "utf8");
 			client.setRequestProperty("Content-Type", "application/json");
 			client.setRequestProperty("User-Agent", BuildConfig.userAgent);
-
-			if (headerParams != null) {
-				Iterator it = headerParams.entrySet().iterator();
-				while (it.hasNext()) {
-					HashMap.Entry pair = (HashMap.Entry)it.next();
-					client.setRequestProperty((String)pair.getKey(), (String)pair.getValue());
-					it.remove();
-				}
-			}
 
 			client.setDoInput(true);
 
@@ -171,8 +159,8 @@ public class Connect extends AsyncTask<URL, Integer, Long> {
 	/**
 	 *	Method that will execute on success
 	 */
-	protected void onPostExecute(Long _reserved) {
-		super.onPostExecute(_reserved);
+	protected void onPostExecute(Long reserved) {
+		super.onPostExecute(reserved);
 		if (listener != null) {
 			listener.onSuccess(response);
 			listener.onFinish(this, null);

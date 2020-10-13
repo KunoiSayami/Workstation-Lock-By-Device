@@ -1,8 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
-	package="com.github.kunoisayami.workstaion.locker">
+	package="com.github.kunoisayami.workstation.locker">
 
 	<uses-permission android:name="android.permission.BLUETOOTH" />
+	<uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
 	<application
 		android:allowBackup="true"
 		android:icon="@mipmap/ic_launcher"
@@ -10,19 +11,13 @@
 		android:roundIcon="@mipmap/ic_launcher_round"
 		android:supportsRtl="true"
 		android:theme="@style/AppTheme">
-		<activity android:name=".MainActivity">
+		<activity android:name="com.github.kunoisayami.workstation.locker.MainActivity">
 			<intent-filter>
 				<action android:name="android.intent.action.MAIN" />
 
 				<category android:name="android.intent.category.LAUNCHER" />
 			</intent-filter>
 		</activity>
-		<receiver android:name=".DeviceDisconnectReceiver" android:exported="false">
-			<intent-filter>
-				<action android:name="android.bluetooth.device.action.ACL_CONNECTED" />
-				<action android:name="android.bluetooth.device.action.ACL_DISCONNECT_REQUESTED" />
-				<action android:name="android.bluetooth.device.action.ACL_DISCONNECTED" />
-			</intent-filter>
-		</receiver>
+		<service android:name=".WatchingService" />
 	</application>
 </manifest>

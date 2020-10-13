@@ -1,4 +1,4 @@
-package com.github.kunoisayami.workstaion.locker;
+package com.github.kunoisayami.workstation.locker;
 
 import android.content.Context;
 
@@ -21,6 +21,6 @@ public class ExampleInstrumentedTest {
 	public void useAppContext() {
 		// Context of the app under test.
 		Context appContext = InstrumentationRegistry.getInstrumentation().getTargetContext();
-		assertEquals("com.github.kunoisayami.workstaion.locker", appContext.getPackageName());
+		assertEquals("com.github.kunoisayami.workstation.locker", appContext.getPackageName());
 	}
 }

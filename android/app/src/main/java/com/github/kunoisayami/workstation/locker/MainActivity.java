@@ -17,56 +17,63 @@
  ** You should have received a copy of the GNU Affero General Public License
  ** along with this program. If not, see <https://www.gnu.org/licenses/>.
  */
-package com.github.kunoisayami.workstaion.locker;
+package com.github.kunoisayami.workstation.locker;
 
-import android.bluetooth.BluetoothDevice;
-import android.content.BroadcastReceiver;
-import android.content.Context;
 import android.content.Intent;
-import android.content.IntentFilter;
 import android.os.Bundle;
 import android.util.Log;
 import android.widget.Button;
 import android.widget.TextView;
-import android.widget.Toast;
 
-import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
-
-
-import static com.github.kunoisayami.workstaion.locker.Unit.getBluetoothNameAndAddress;
 
 public class MainActivity extends AppCompatActivity {
 	private static final String TAG = "log_MainActivity";
 
 	TextView textDeviceName, textDeviceAddress;
-	Button buttonConfirm, buttonReset;
+	Button buttonConfirm, buttonReset, buttonStartService, buttonStopService, buttonRefresh;
 
 	private void initView() {
+		textDeviceName = findViewById(R.id.textDeviceName);
+		textDeviceAddress = findViewById(R.id.textDeviceAddress);
+		buttonConfirm = findViewById(R.id.buttonConfirm);
+		buttonReset = findViewById(R.id.buttonReset);
+		buttonStartService = findViewById(R.id.buttonStartService);
+		buttonStopService = findViewById(R.id.buttonStopService);
+		buttonRefresh = findViewById(R.id.buttonRefresh);
 
+		this.recheckService();
+		buttonStartService.setOnClickListener(v -> {
+			Log.i(TAG, "initView: OnClick start");
+			startService(new Intent(this, WatchingService.class));
+			recheckService();
+		});
+		buttonStopService.setOnClickListener(v -> {
+			stopService(new Intent(this, WatchingService.class));
+			recheckService();
+		});
+
+		buttonRefresh.setOnClickListener(v ->
+				recheckService());
+
+	}
+
+	private void recheckService() {
+		boolean b = Unit.isServiceRunning(this, WatchingService.class);
+		buttonStartService.setEnabled(!b);
+		buttonStopService.setEnabled(b);
 	}
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.activity_main);
-		IntentFilter filter = new IntentFilter();
-		filter.addAction(BluetoothDevice.ACTION_ACL_CONNECTED);
-		filter.addAction(BluetoothDevice.ACTION_ACL_DISCONNECT_REQUESTED);
-		filter.addAction(BluetoothDevice.ACTION_ACL_DISCONNECTED);
-		this.registerReceiver(broadcastReceiver, filter);
+		initView();
 	}
 
-	// https://www.tutorialspoint.com/how-to-check-if-a-bluetooth-device-is-connected-with-android-device
-	private final BroadcastReceiver broadcastReceiver = new BroadcastReceiver() {
-		@Override
-		public void onReceive(Context context, @NonNull Intent intent) {
-		}
-	};
 
 	@Override
 	protected void onDestroy() {
-		this.unregisterReceiver(broadcastReceiver);
 		super.onDestroy();
 	}
 }

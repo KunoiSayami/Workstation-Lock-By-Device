@@ -17,8 +17,9 @@
  ** You should have received a copy of the GNU Affero General Public License
  ** along with this program. If not, see <https://www.gnu.org/licenses/>.
  */
-package com.github.kunoisayami.workstaion.locker;
+package com.github.kunoisayami.workstation.locker;
 
+import android.app.ActivityManager;
 import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothDevice;
 import android.bluetooth.BluetoothManager;
@@ -28,11 +29,14 @@ import android.util.Log;
 
 import androidx.annotation.NonNull;
 
+import java.io.File;
 import java.util.List;
 import java.util.Set;
 
 public class Unit {
 	private static final String TAG = "log_Unit";
+
+	public static File filesDir = null;
 
 	@NonNull
 	public static List<BluetoothDevice> getConnectBluetoothDevices(@NonNull Context context) {
@@ -60,5 +64,15 @@ public class Unit {
 	@NonNull
 	public static String getBluetoothNameAndAddress(@NonNull BluetoothDevice device) {
 		return device.getName() + " " + device.getAddress();
+	}
+
+	public static boolean isServiceRunning(Context context, Class<?> serviceClass) {
+		ActivityManager manager = (ActivityManager) context.getSystemService(Context.ACTIVITY_SERVICE);
+		for (ActivityManager.RunningServiceInfo service : manager.getRunningServices(Integer.MAX_VALUE)) {
+			if (serviceClass.getName().equals(service.service.getClassName())) {
+				return true;
+			}
+		}
+		return false;
 	}
 }
