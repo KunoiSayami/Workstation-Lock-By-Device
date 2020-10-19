@@ -59,7 +59,7 @@ public class Connect extends AsyncTask<URL, Integer, Long> {
 	private static final String TAG = "log_Connect";
 
 	private String response = "";
-	private String method, requestPath;
+	private String method;
 	private int responseCode;
 
 
@@ -69,11 +69,9 @@ public class Connect extends AsyncTask<URL, Integer, Long> {
 
 
 	Connect(HashMap<String, String> postParams,
-			String requestPath,
 			Callback listener,
 			boolean is_post) {
 		this.postParams = postParams;
-		this.requestPath = requestPath;
 		this.listener = listener;
 		this.method = is_post? "POST" : "GET";
 	}
@@ -182,6 +180,6 @@ public class Connect extends AsyncTask<URL, Integer, Long> {
 	}
 
 	public void logRequest() {
-		Log.v(TAG, "logRequest: Request path => " + requestPath + " Method => " + method);
+		Log.v(TAG, "logRequest:  Method => " + method);
 	}
 }

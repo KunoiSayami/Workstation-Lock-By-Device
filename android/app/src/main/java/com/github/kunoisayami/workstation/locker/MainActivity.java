@@ -21,17 +21,27 @@ package com.github.kunoisayami.workstation.locker;
 
 import android.content.Intent;
 import android.os.Bundle;
+import android.util.EventLog;
 import android.util.Log;
 import android.widget.Button;
 import android.widget.TextView;
 
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.recyclerview.widget.LinearLayoutManager;
+import androidx.recyclerview.widget.RecyclerView;
+
+import java.util.ArrayList;
 
 public class MainActivity extends AppCompatActivity {
 	private static final String TAG = "log_MainActivity";
 
 	TextView textDeviceName, textDeviceAddress;
-	Button buttonConfirm, buttonReset, buttonStartService, buttonStopService, buttonRefresh;
+	Button buttonConfirm, buttonReset, buttonStartService, buttonStopService, buttonRefresh, buttonTest;
+
+	ArrayList<PairedBluetoothDevice> devices = new ArrayList<>();
+	PairedBluetoothDeviceAdapter deviceAdapter;
+	RecyclerView devicesView;
+	private String bindName, bindAddress;
 
 	private void initView() {
 		textDeviceName = findViewById(R.id.textDeviceName);
@@ -41,14 +51,19 @@ public class MainActivity extends AppCompatActivity {
 		buttonStartService = findViewById(R.id.buttonStartService);
 		buttonStopService = findViewById(R.id.buttonStopService);
 		buttonRefresh = findViewById(R.id.buttonRefresh);
+		devicesView = findViewById(R.id.recyclerDevicesView);
 
 		this.recheckService();
 		buttonStartService.setOnClickListener(v -> {
 			Log.i(TAG, "initView: OnClick start");
+			if (recheckService())
+				return;
 			startService(new Intent(this, WatchingService.class));
 			recheckService();
 		});
 		buttonStopService.setOnClickListener(v -> {
+			if (!recheckService())
+				return;
 			stopService(new Intent(this, WatchingService.class));
 			recheckService();
 		});
@@ -56,12 +71,24 @@ public class MainActivity extends AppCompatActivity {
 		buttonRefresh.setOnClickListener(v ->
 				recheckService());
 
+		RecyclerView.LayoutManager layoutManager = new LinearLayoutManager(this, RecyclerView.VERTICAL, false);
+		devicesView.setLayoutManager(layoutManager);
+		devicesView.addItemDecoration(new VerticalSpaceItemDecoration(30));
+		devicesView.setAdapter(new PairedBluetoothDeviceAdapter(Unit.getPairedBluetoothDevices(), o -> {
+			PairedBluetoothDevice device = (PairedBluetoothDevice) o;
+			bindName = device.getName();
+			bindAddress = device.getAddress();
+			textDeviceName.setText(device.getName());
+			textDeviceAddress.setText(device.getAddress());
+			buttonConfirm.setEnabled(true);
+		}));
 	}
 
-	private void recheckService() {
+	private boolean recheckService() {
 		boolean b = Unit.isServiceRunning(this, WatchingService.class);
 		buttonStartService.setEnabled(!b);
 		buttonStopService.setEnabled(b);
+		return b;
 	}
 
 	@Override
@@ -71,9 +98,10 @@ public class MainActivity extends AppCompatActivity {
 		initView();
 	}
 
-
 	@Override
 	protected void onDestroy() {
+		if (Unit.isServiceRunning(this, WatchingService.class))
+			stopService(new Intent(this, WatchingService.class));
 		super.onDestroy();
 	}
 }
