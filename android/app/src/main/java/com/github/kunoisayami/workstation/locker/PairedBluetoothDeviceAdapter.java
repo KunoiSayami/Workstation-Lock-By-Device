@@ -34,9 +34,9 @@ import java.util.Set;
 public class PairedBluetoothDeviceAdapter extends RecyclerView.Adapter<PairedBluetoothDeviceAdapter.ViewType> {
 
 	private ArrayList<PairedBluetoothDevice> items;
-	private SimpleCallback listener;
+	private OnRecyclerViewClickListener listener;
 
-	public PairedBluetoothDeviceAdapter(Set<BluetoothDevice> items, SimpleCallback listener) {
+	public PairedBluetoothDeviceAdapter(Set<BluetoothDevice> items, @NonNull OnRecyclerViewClickListener listener) {
 		this.items = new ArrayList<>();
 		for (BluetoothDevice device: items)
 			this.items.add(new PairedBluetoothDevice(device.getName(), device.getAddress()));
@@ -44,7 +44,7 @@ public class PairedBluetoothDeviceAdapter extends RecyclerView.Adapter<PairedBlu
 	}
 
 
-	public PairedBluetoothDeviceAdapter(ArrayList<PairedBluetoothDevice> items, SimpleCallback listener) {
+	public PairedBluetoothDeviceAdapter(ArrayList<PairedBluetoothDevice> items, @NonNull OnRecyclerViewClickListener listener) {
 		this.items = items;
 		this.listener = listener;
 	}
@@ -67,16 +67,14 @@ public class PairedBluetoothDeviceAdapter extends RecyclerView.Adapter<PairedBlu
 			textName.setText(device.getName());
 			textAddress.setText(device.getAddress());
 		}
-
-		void setOnclickListener(View.OnClickListener onclickListener) {
-			rootView.setOnClickListener(onclickListener);
-		}
 	}
 
 	@NonNull
 	@Override
 	public ViewType onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
 		View v = LayoutInflater.from(parent.getContext()).inflate(R.layout.item_device, parent, false);
+
+		v.setOnClickListener(l -> listener.onItemClickListener(v));
 		return new ViewType(v);
 	}
 
@@ -84,11 +82,6 @@ public class PairedBluetoothDeviceAdapter extends RecyclerView.Adapter<PairedBlu
 	public void onBindViewHolder(@NonNull ViewType holder, int position) {
 		PairedBluetoothDevice device = this.items.get(position);
 		holder.setProp(device);
-		if (listener != null) {
-			holder.setOnclickListener(v -> {
-				listener.Callback(device);
-			});
-		}
 	}
 
 	@Override
@@ -96,4 +89,7 @@ public class PairedBluetoothDeviceAdapter extends RecyclerView.Adapter<PairedBlu
 		return this.items.size();
 	}
 
+	public ArrayList<PairedBluetoothDevice> getList() {
+		return this.items;
+	}
 }

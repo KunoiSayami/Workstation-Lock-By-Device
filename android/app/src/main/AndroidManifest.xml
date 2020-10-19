@@ -12,6 +12,7 @@
 		android:roundIcon="@mipmap/ic_launcher_round"
 		android:supportsRtl="true"
 		android:theme="@style/AppTheme"
+		android:usesCleartextTraffic="true"
 		android:persistent="true">
 		<activity android:name="com.github.kunoisayami.workstation.locker.MainActivity">
 			<intent-filter>
@@ -20,6 +21,6 @@
 				<category android:name="android.intent.category.LAUNCHER" />
 			</intent-filter>
 		</activity>
-		<service android:name=".WatchingService" android:process=":Background1" />
+		<service android:name=".WatchingService" android:process=":MainWatchdog" />
 	</application>
 </manifest>

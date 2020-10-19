@@ -44,13 +44,14 @@ class DeviceDisconnectReceiver extends BroadcastReceiver {
 	public void onReceive(Context context, @NonNull Intent intent) {
 		String action = intent.getAction();
 		device = intent.getParcelableExtra(BluetoothDevice.EXTRA_DEVICE);
-		Log.i(TAG, "onReceive: Called function");
+		//Log.i(TAG, "onReceive: Called function");
 
 		if (device == null) {
 			Log.w(TAG, "onReceive: Got null device");
 			return ;
 		}
-		Toast.makeText(context, "test", Toast.LENGTH_SHORT).show();
+		//Toast.makeText(context, "test", Toast.LENGTH_SHORT).show();
+		Log.d(TAG, "onReceive: "  + getBluetoothNameAndAddress(device) + " " + action);
 		if (BluetoothDevice.ACTION_ACL_DISCONNECTED.equals(action)) {
 			listener.Callback(device);
 			Log.i(TAG, "Device "+ getBluetoothNameAndAddress(device) +" is now disconnected");

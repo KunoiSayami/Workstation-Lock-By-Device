@@ -29,13 +29,15 @@ auth_key = ''
 
 
 @routes.post('/post')
-async def post_handler(request: web.Request) -> None:
+async def post_handler(request: web.Request) -> web.Response:
     try:
         j = json.loads(await request.text())
         if j.get('auth') == auth_key:
             ctypes.windll.user32.LockWorkStation()
+            return web.Response(text='{"status": 200}')
     except:
         pass
+    return web.Response(status=403)
 
 
 if __name__ == "__main__":

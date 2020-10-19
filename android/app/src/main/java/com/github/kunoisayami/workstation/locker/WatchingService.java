@@ -33,9 +33,11 @@ import android.os.IBinder;
 import android.util.Log;
 import android.widget.Toast;
 
+import androidx.annotation.Nullable;
 import androidx.annotation.RequiresApi;
 import androidx.core.app.NotificationCompat;
 
+import java.util.HashMap;
 import java.util.Timer;
 import java.util.TimerTask;
 
@@ -44,6 +46,9 @@ public class WatchingService extends Service {
 
 	private static final String TAG = "log_WatchingService";
 	private DeviceDisconnectReceiver receiver;
+
+	private static String bindAddress;
+
 
 	@Override
 	public void onCreate() {
@@ -55,6 +60,29 @@ public class WatchingService extends Service {
 		filter.addAction(BluetoothDevice.ACTION_ACL_DISCONNECTED);
 		this.receiver = new DeviceDisconnectReceiver(device -> {
 			Log.i(TAG, "onCreate: " + Unit.getBluetoothNameAndAddress((BluetoothDevice) device));
+			if (((BluetoothDevice) device).getAddress().equals(bindAddress)) {
+				Thread thread = new Thread(() -> {
+					HashMap<String, String> params = new HashMap<>();
+					params.put("auth", BuildConfig.accessKey);
+					new Connect(params, new Callback() {
+						@Override
+						public void onSuccess(Object o) {
+
+						}
+
+						@Override
+						public void onFailure(Object o, Throwable e) {
+
+						}
+
+						@Override
+						public void onFinish(Object o, @Nullable Throwable e) {
+							Log.i(TAG, "onFinish: Finished");
+						}
+					}, true).doInBackground();
+				});
+				thread.start();
+			}
 		});
 		this.registerReceiver(this.receiver, filter);
 	}
@@ -67,7 +95,7 @@ public class WatchingService extends Service {
 			public void run() {
 			}
 		};
-		timer.schedule(timerTask, 1000, 1000); //
+		timer.schedule(timerTask, 10000, 10000);
 	}
 
 	public void stopTimerTask() {
@@ -103,8 +131,11 @@ public class WatchingService extends Service {
 	@Override
 	public int onStartCommand(Intent intent, int flags, int startId) {
 		super.onStartCommand(intent, flags, startId);
+		bindAddress = intent.getStringExtra("address");
+		if (bindAddress == null)
+			Log.w(TAG, "onStartCommand: Set Address Failure");
 		Toast.makeText(this, "service starting", Toast.LENGTH_SHORT).show();
-		// If we get killed, after returning from here, restart
+
 		startTimer();
 		return START_STICKY;
 	}

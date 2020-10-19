@@ -23,8 +23,10 @@ import android.content.Intent;
 import android.os.Bundle;
 import android.util.EventLog;
 import android.util.Log;
+import android.view.View;
 import android.widget.Button;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.recyclerview.widget.LinearLayoutManager;
@@ -38,10 +40,10 @@ public class MainActivity extends AppCompatActivity {
 	TextView textDeviceName, textDeviceAddress;
 	Button buttonConfirm, buttonReset, buttonStartService, buttonStopService, buttonRefresh, buttonTest;
 
-	ArrayList<PairedBluetoothDevice> devices = new ArrayList<>();
+	ArrayList<PairedBluetoothDevice> devices;
 	PairedBluetoothDeviceAdapter deviceAdapter;
 	RecyclerView devicesView;
-	private String bindName, bindAddress;
+	private static String bindName, bindAddress, preBindName, preBindAddress;
 
 	private void initView() {
 		textDeviceName = findViewById(R.id.textDeviceName);
@@ -53,12 +55,35 @@ public class MainActivity extends AppCompatActivity {
 		buttonRefresh = findViewById(R.id.buttonRefresh);
 		devicesView = findViewById(R.id.recyclerDevicesView);
 
+		DatabaseHelper helper = new DatabaseHelper(this);
+		PairedBluetoothDevice _device = helper.getConfig();
+
+		preBindName = bindName = _device.getName();
+		preBindAddress = bindAddress = _device.getAddress();
+		Log.d(TAG, "initView: bindName => " + bindName + " bindAddress => " + bindAddress);
+
+		helper.close();
+
+		textDeviceName.setText(bindName);
+		textDeviceAddress.setText(bindAddress);
+
+		buttonConfirm.setOnClickListener( v -> {
+			DatabaseHelper _help = new DatabaseHelper(this);
+			_help.updateConfig(bindName, bindAddress).close();
+			preBindName = bindName;
+			preBindAddress = bindAddress;
+			buttonConfirm.setEnabled(false);
+			Toast.makeText(this, "Set address to " + bindAddress, Toast.LENGTH_SHORT).show();
+		});
+
 		this.recheckService();
 		buttonStartService.setOnClickListener(v -> {
 			Log.i(TAG, "initView: OnClick start");
 			if (recheckService())
 				return;
-			startService(new Intent(this, WatchingService.class));
+			Intent intent = new Intent(this, WatchingService.class);
+			intent.putExtra("address", bindAddress);
+			startService(intent);
 			recheckService();
 		});
 		buttonStopService.setOnClickListener(v -> {
@@ -74,14 +99,26 @@ public class MainActivity extends AppCompatActivity {
 		RecyclerView.LayoutManager layoutManager = new LinearLayoutManager(this, RecyclerView.VERTICAL, false);
 		devicesView.setLayoutManager(layoutManager);
 		devicesView.addItemDecoration(new VerticalSpaceItemDecoration(30));
-		devicesView.setAdapter(new PairedBluetoothDeviceAdapter(Unit.getPairedBluetoothDevices(), o -> {
-			PairedBluetoothDevice device = (PairedBluetoothDevice) o;
-			bindName = device.getName();
-			bindAddress = device.getAddress();
-			textDeviceName.setText(device.getName());
-			textDeviceAddress.setText(device.getAddress());
+		deviceAdapter = new PairedBluetoothDeviceAdapter(Unit.getPairedBluetoothDevices(), v -> {
+			int position = devicesView.getChildAdapterPosition(v);
+			PairedBluetoothDevice device = devices.get(position);
+			updateCurrentDeviceStatus(device.getName(), device.getAddress());
 			buttonConfirm.setEnabled(true);
-		}));
+		});
+		devices = deviceAdapter.getList();
+		devicesView.setAdapter(deviceAdapter);
+
+		buttonReset.setOnClickListener(v -> {
+			updateCurrentDeviceStatus(preBindName, preBindAddress);
+			buttonConfirm.setEnabled(false);
+		});
+	}
+
+	private void updateCurrentDeviceStatus(String name, String address) {
+		bindName = name;
+		bindAddress = address;
+		textDeviceName.setText(bindName);
+		textDeviceAddress.setText(bindAddress);
 	}
 
 	private boolean recheckService() {

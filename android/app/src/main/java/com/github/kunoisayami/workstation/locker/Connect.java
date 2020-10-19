@@ -30,6 +30,7 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.io.OutputStreamWriter;
+import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
@@ -76,9 +77,66 @@ public class Connect extends AsyncTask<URL, Integer, Long> {
 		this.method = is_post? "POST" : "GET";
 	}
 
+	private
+	void doConnectHttp() throws IOException, ConnectException {
+		logRequest();
+		StringBuilder stringBuilder = new StringBuilder();
+		URL url = new URL(BuildConfig.serverAddress);
+		HttpURLConnection client = null;
+		try {
+			client = (HttpURLConnection) url.openConnection();
+			client.setRequestMethod(method);
+
+			client.setRequestProperty("Accept-Charset", "utf8");
+			client.setRequestProperty("Content-Type", "application/json");
+			client.setRequestProperty("User-Agent", BuildConfig.userAgent);
+
+			client.setDoInput(true);
+
+			if (method.equals("POST")) {
+				client.setDoOutput(true);
+				String strParams = new JSONObject(postParams).toString();
+				OutputStream os = client.getOutputStream();
+				BufferedWriter bufferedWriter = new BufferedWriter(
+						new OutputStreamWriter(os, StandardCharsets.UTF_8)
+				);
+				bufferedWriter.write(strParams);
+
+				bufferedWriter.flush();
+				bufferedWriter.close();
+				os.close();
+			}
+
+			responseCode = client.getResponseCode();
+			if (responseCode == HttpURLConnection.HTTP_OK) {
+				String line;
+				BufferedReader bufferedReader = new BufferedReader(
+						new InputStreamReader(client.getInputStream())
+				);
+				while ((line = bufferedReader.readLine()) != null){
+					stringBuilder.append(line);
+				}
+				response = stringBuilder.toString();
+				bufferedReader.close();
+			}
+			else {
+				response = "{}";
+				throw new ServerException(responseCode);
+			}
+		}
+		catch (MalformedURLException e){
+			e.printStackTrace();
+		}
+		finally {
+			if (client != null)
+				client.disconnect();
+		}
+		Log.d(TAG, "postData: Finish Response => " + response);
+	}
+
 
 	private
-	void doConnect() throws IOException, ConnectException {
+	void doConnectHttps() throws IOException, ConnectException {
 		logRequest();
 		StringBuilder stringBuilder = new StringBuilder();
 		URL url = new URL(BuildConfig.serverAddress);
@@ -141,7 +199,11 @@ public class Connect extends AsyncTask<URL, Integer, Long> {
 	@Override
 	protected Long doInBackground(URL... params) {
 		try {
-			doConnect();
+			//noinspection ConstantConditions
+			if (BuildConfig.serverAddress.startsWith("https"))
+				doConnectHttps();
+			else
+				doConnectHttp();
 		} catch (IOException | ConnectException e) {
 			e.printStackTrace();
 			if (listener != null){
