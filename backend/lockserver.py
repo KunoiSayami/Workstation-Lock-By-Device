@@ -27,6 +27,24 @@ routes = web.RouteTableDef()
 
 auth_key = ''
 
+rep = '''<html>
+<head><title>403 Access Denied</title></head>
+<body>
+<center><h1>403 Access Denied</h1></center>
+<hr><center>nginx</center>
+</body>
+</html>
+<!-- a padding to disable MSIE and Chrome friendly error page -->
+<!-- a padding to disable MSIE and Chrome friendly error page -->
+<!-- a padding to disable MSIE and Chrome friendly error page -->
+<!-- a padding to disable MSIE and Chrome friendly error page -->
+<!-- a padding to disable MSIE and Chrome friendly error page -->
+<!-- a padding to disable MSIE and Chrome friendly error page -->'''
+
+
+@routes.get('/')
+async def handle_get(_request: web.Request) -> web.Response:
+    return web.Response(status=403, text=rep, content_type='text/html')
 
 @routes.post('/post')
 async def post_handler(request: web.Request) -> web.Response:

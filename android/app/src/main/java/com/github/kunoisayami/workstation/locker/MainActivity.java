@@ -19,7 +19,10 @@
  */
 package com.github.kunoisayami.workstation.locker;
 
+import android.content.BroadcastReceiver;
+import android.content.Context;
 import android.content.Intent;
+import android.content.IntentFilter;
 import android.os.Bundle;
 import android.util.EventLog;
 import android.util.Log;
@@ -28,22 +31,27 @@ import android.widget.Button;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import java.util.ArrayList;
+import java.util.HashMap;
+
 
 public class MainActivity extends AppCompatActivity {
 	private static final String TAG = "log_MainActivity";
 
 	TextView textDeviceName, textDeviceAddress;
-	Button buttonConfirm, buttonReset, buttonStartService, buttonStopService, buttonRefresh, buttonTest;
+	Button buttonConfirm, buttonReset, buttonStartService, buttonStopService, buttonRefresh,
+			buttonLock;
 
 	ArrayList<PairedBluetoothDevice> devices;
 	PairedBluetoothDeviceAdapter deviceAdapter;
 	RecyclerView devicesView;
 	private static String bindName, bindAddress, preBindName, preBindAddress;
+	private BroadcastReceiver receiverLockFinish;
 
 	private void initView() {
 		textDeviceName = findViewById(R.id.textDeviceName);
@@ -54,6 +62,7 @@ public class MainActivity extends AppCompatActivity {
 		buttonStopService = findViewById(R.id.buttonStopService);
 		buttonRefresh = findViewById(R.id.buttonRefresh);
 		devicesView = findViewById(R.id.recyclerDevicesView);
+		buttonLock = findViewById(R.id.buttonLock);
 
 		DatabaseHelper helper = new DatabaseHelper(this);
 		PairedBluetoothDevice _device = helper.getConfig();
@@ -66,6 +75,41 @@ public class MainActivity extends AppCompatActivity {
 
 		textDeviceName.setText(bindName);
 		textDeviceAddress.setText(bindAddress);
+
+		buttonLock.setOnClickListener( v-> {
+			buttonLock.setEnabled(false);
+			Thread thread = new Thread(() -> {
+				HashMap<String, String> params = new HashMap<>();
+				params.put("auth", BuildConfig.accessKey);
+				new Connect(params, new Callback() {
+					@Override
+					public void onSuccess(Object o) {
+
+					}
+
+					@Override
+					public void onFailure(Object o, Throwable e) {
+
+					}
+
+					@Override
+					public void onFinish(Object o, @Nullable Throwable e) {
+						Log.i(TAG, "onFinish: Lock request sent");
+						sendBroadcast(new Intent("lock.workstation.finish"));
+					}
+				}, true).doInBackground();
+			});
+			thread.start();
+		});
+		receiverLockFinish = new BroadcastReceiver() {
+			@Override
+			public void onReceive(Context context, Intent intent) {
+				Toast.makeText(context, "Request sent", Toast.LENGTH_SHORT).show();
+				buttonLock.setEnabled(true);
+			}
+		};
+		IntentFilter filter = new IntentFilter("lock.workstation.finish");
+		registerReceiver(receiverLockFinish, filter);
 
 		buttonConfirm.setOnClickListener( v -> {
 			DatabaseHelper _help = new DatabaseHelper(this);
@@ -139,6 +183,7 @@ public class MainActivity extends AppCompatActivity {
 	protected void onDestroy() {
 		if (Unit.isServiceRunning(this, WatchingService.class))
 			stopService(new Intent(this, WatchingService.class));
+		unregisterReceiver(receiverLockFinish);
 		super.onDestroy();
 	}
 }

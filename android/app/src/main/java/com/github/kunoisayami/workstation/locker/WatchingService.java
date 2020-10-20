@@ -107,10 +107,9 @@ public class WatchingService extends Service {
 
 	// Reference: https://stackoverflow.com/a/52258125
 	@RequiresApi(Build.VERSION_CODES.O)
-	private void startMyOwnForeground()
-	{
-		String NOTIFICATION_CHANNEL_ID = "example.permanence";
-		String channelName = "Background Service";
+	private void startMyOwnForeground() {
+		String NOTIFICATION_CHANNEL_ID = "workstation.locker.watchdog";
+		String channelName = "Watchdog Service";
 		NotificationChannel chan = new NotificationChannel(NOTIFICATION_CHANNEL_ID, channelName, NotificationManager.IMPORTANCE_NONE);
 		chan.setLightColor(Color.BLUE);
 		chan.setLockscreenVisibility(Notification.VISIBILITY_PRIVATE);
@@ -121,7 +120,7 @@ public class WatchingService extends Service {
 
 		NotificationCompat.Builder notificationBuilder = new NotificationCompat.Builder(this, NOTIFICATION_CHANNEL_ID);
 		Notification notification = notificationBuilder.setOngoing(true)
-				.setContentTitle("App is running in background")
+				.setContentTitle("Watchdog service is running in background")
 				.setPriority(NotificationManager.IMPORTANCE_MIN)
 				.setCategory(Notification.CATEGORY_SERVICE)
 				.build();

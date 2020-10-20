@@ -182,6 +182,7 @@ public class Connect extends AsyncTask<URL, Integer, Long> {
 			}
 			else {
 				response = "{}";
+				Log.d(TAG, "doConnectHttps: Code => " + responseCode + " Request type => " + method);
 				throw new ServerException(responseCode);
 			}
 		}
