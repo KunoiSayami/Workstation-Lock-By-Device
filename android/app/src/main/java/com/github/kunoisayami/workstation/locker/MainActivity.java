@@ -24,9 +24,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.os.Bundle;
-import android.util.EventLog;
 import android.util.Log;
-import android.view.View;
 import android.widget.Button;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -104,6 +102,7 @@ public class MainActivity extends AppCompatActivity {
 		receiverLockFinish = new BroadcastReceiver() {
 			@Override
 			public void onReceive(Context context, Intent intent) {
+				Log.d(TAG, "onReceive: Release button");
 				Toast.makeText(context, "Request sent", Toast.LENGTH_SHORT).show();
 				buttonLock.setEnabled(true);
 			}

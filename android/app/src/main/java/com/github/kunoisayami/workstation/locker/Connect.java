@@ -209,8 +209,10 @@ public class Connect extends AsyncTask<URL, Integer, Long> {
 			e.printStackTrace();
 			if (listener != null){
 				listener.onFailure(this, e);
-				listener.onFinish(this, e);
 			}
+		}
+		if (listener != null) {
+			listener.onFinish(this, null);
 		}
 
 		final byte[] result = response.getBytes();
@@ -221,6 +223,7 @@ public class Connect extends AsyncTask<URL, Integer, Long> {
 	 *	Method that will execute on success
 	 */
 	protected void onPostExecute(Long reserved) {
+		Log.i(TAG, "onPostExecute: Executed");
 		super.onPostExecute(reserved);
 		if (listener != null) {
 			listener.onSuccess(response);
