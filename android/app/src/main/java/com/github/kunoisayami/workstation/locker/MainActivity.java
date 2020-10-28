@@ -119,7 +119,6 @@ public class MainActivity extends AppCompatActivity {
 			Toast.makeText(this, "Set address to " + bindAddress, Toast.LENGTH_SHORT).show();
 		});
 
-		this.recheckService();
 		buttonStartService.setOnClickListener(v -> {
 			Log.i(TAG, "initView: OnClick start");
 			if (recheckService())
@@ -176,6 +175,12 @@ public class MainActivity extends AppCompatActivity {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.activity_main);
 		initView();
+	}
+
+	@Override
+	protected void onResume() {
+		super.onResume();
+		recheckService();
 	}
 
 	@Override
