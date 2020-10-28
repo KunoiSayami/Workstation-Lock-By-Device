@@ -126,13 +126,13 @@ public class MainActivity extends AppCompatActivity {
 			Intent intent = new Intent(this, WatchingService.class);
 			intent.putExtra("address", bindAddress);
 			startService(intent);
-			recheckService();
+			recheckService(true);
 		});
 		buttonStopService.setOnClickListener(v -> {
 			if (!recheckService())
 				return;
 			stopService(new Intent(this, WatchingService.class));
-			recheckService();
+			recheckService(false);
 		});
 
 		buttonRefresh.setOnClickListener(v ->
@@ -164,10 +164,13 @@ public class MainActivity extends AppCompatActivity {
 	}
 
 	private boolean recheckService() {
-		boolean b = Unit.isServiceRunning(this, WatchingService.class);
-		buttonStartService.setEnabled(!b);
-		buttonStopService.setEnabled(b);
-		return b;
+		return recheckService(Unit.isServiceRunning(this, WatchingService.class));
+	}
+
+	private boolean recheckService(boolean override) {
+		buttonStartService.setEnabled(!override);
+		buttonStopService.setEnabled(override);
+		return override;
 	}
 
 	@Override
